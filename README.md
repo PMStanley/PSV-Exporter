@@ -2,6 +2,8 @@
 
 PSV Exporter allows you to extract files from the virtual PS1/PS2 saves that are created when playing a PS1 or PS2 game on the Playstation 3.
 
+This is the source code for PSV Exporter 1.1, available as a Windows executable at [PS2 Save Tools](http://www.ps2savetools.com/wpfb-file/psvexporter11-zip/)
+
 ## Usage for PS2 files
 Load the PSV file to display a list of the files contained within.
 You can extract individual files or all files at once.
