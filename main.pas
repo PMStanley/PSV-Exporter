@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, XPMan, filedrag, ComCtrls, Menus, PSVClass, ToolWin,
-  ImgList, BrowseForFolderU;
+  ImgList, BrowseForFolderU, System.ImageList;
 
   var
   psvFile : TPSVFile;
@@ -14,7 +14,7 @@ uses
 type
   TForm1 = class(TForm)
     XPManifest1: TXPManifest;
-    FileDrag1: TFileDrag;
+    //FileDrag1: TFileDrag;
     ListView1: TListView;
     MainMenu1: TMainMenu;
     File1: TMenuItem;
@@ -36,12 +36,26 @@ type
     ExtractAll1: TMenuItem;
     Help1: TMenuItem;
     About1: TMenuItem;
-    ToolButton4: TToolButton;
+    Seperator: TToolButton;
     btnSavePS1: TToolButton;
     ExtractPS1Save1: TMenuItem;
     ExtractPS1Save2: TMenuItem;
     SaveDialog2: TSaveDialog;
     Options1: TMenuItem;
+    FileDrag1: TFileDrag;
+    SaveasPSV1: TMenuItem;
+    ImportARMaxsave1: TMenuItem;
+    ImportPS1MCSSave1: TMenuItem;
+    btnImportARMax: TToolButton;
+    btnImportPS1Save: TToolButton;
+    btSaveAsPSV: TToolButton;
+    openSeperator: TToolButton;
+    ToolButton1: TToolButton;
+    ExportasARMaxSave1: TMenuItem;
+    N2: TMenuItem;
+    N3: TMenuItem;
+    N4: TMenuItem;
+    btnExportAsMax: TToolButton;
     procedure FileDrag1Drop(Sender: TObject);
     procedure Exit1Click(Sender: TObject);
     procedure OpenPSVfile1Click(Sender: TObject);
@@ -69,6 +83,15 @@ type
     procedure Options1Click(Sender: TObject);
     procedure showoptions;
     procedure SaveDialog2TypeChange(Sender: TObject);
+    procedure SaveasPSV1Click(Sender: TObject);
+    procedure ImportARMaxsave1Click(Sender: TObject);
+    procedure ImportPS1MCSSave1Click(Sender: TObject);
+    procedure btnImportARMaxClick(Sender: TObject);
+    procedure btnImportPS1SaveClick(Sender: TObject);
+    procedure btSaveAsPSVClick(Sender: TObject);
+    procedure exportMaxFile;
+    procedure ExportasARMaxSave1Click(Sender: TObject);
+    procedure btnExportAsMaxClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -97,6 +120,11 @@ end;
 procedure TForm1.Exit1Click(Sender: TObject);
 begin
  Close;
+end;
+
+procedure TForm1.ExportasARMaxSave1Click(Sender: TObject);
+begin
+  exportMaxFile;
 end;
 
 procedure TForm1.ExtractAll;
@@ -141,7 +169,7 @@ begin
       if PSVFile.extractAFile(anItem.Index, saveDialog1.FileName) then begin
         StatusBar1.SimpleText := 'File saved';
       end else begin
-        StatusBar1.SimpleText := 'Extraction aborted';
+        StatusBar1.SimpleText := 'Extraction cancelled';
       end;
     end;
   end else begin
@@ -161,14 +189,15 @@ end;
 
 procedure TForm1.ExtractPS1;
 begin
-  saveDialog2.FileName := '*.mcs';
+  saveDialog2.FileName := PSVfile.getPS1ProdCode + '.mcs';
   saveDialog2.DefaultExt := 'mcs';
+  saveDialog2.Filter := 'PS1 Single Save File|*.mcs|All Files|*';;
   saveDialog2.FilterIndex := 1;
   if SaveDialog2.Execute then begin
      if PSVFile.extractPS1Save(saveDialog2.FileName) then begin
       StatusBar1.SimpleText := 'File saved';
      end else begin
-      StatusBar1.SimpleText := 'Extraction aborted';
+      StatusBar1.SimpleText := 'Extraction cancelled';
      end;
   end;
 end;
@@ -185,6 +214,7 @@ end;
 
 procedure TForm1.FileDrag1Drop(Sender: TObject);
 begin
+
   clearDisplay;
   if not PSVFile.loadFile(FileDrag1.Files.Strings[0]) then begin
       showmessage('Error loading file');
@@ -224,16 +254,60 @@ if paramcount > 0 then begin
   end;
 end;
 
-procedure TForm1.loadFile;
+procedure TForm1.ImportARMaxsave1Click(Sender: TObject);
 begin
+  OpenDialog1.Filter := 'AR Max Save File|*.max|All Files|*';
+  OpenDialog1.FileName := '';
   if OpenDialog1.Execute then begin
     clearDisplay;
+    //PSVFile.Clear;
+    if not PSVFile.ImportMaxFile(openDialog1.FileName) then begin
+      showmessage('Error importing file');
+      StatusBar1.SimpleText := 'Error importing file!';
+      PSVFile.Clear;
+    end else begin
+      StatusBar1.SimpleText := ExtractFileName(openDialog1.FileName) + ' Imported';
+      //PSVFile.createSignature;
+    end;
+  end else begin
+    StatusBar1.SimpleText := 'Import cancelled';
+  end;
+end;
+
+procedure TForm1.ImportPS1MCSSave1Click(Sender: TObject);
+begin
+  OpenDialog1.Filter := 'PS1 Single Save File|*.mcs|All Files|*';
+  OpenDialog1.FileName := '';
+  if OpenDialog1.Execute then begin
+    clearDisplay;
+    //PSVFile.Clear;
+    if not PSVFile.ImportPS1MCSFile(openDialog1.FileName) then begin
+      showmessage('Error importing file');
+      StatusBar1.SimpleText := 'Error importing file!';
+      PSVFile.Clear;
+    end else begin
+      StatusBar1.SimpleText := ExtractFileName(openDialog1.FileName) + ' Imported';
+      //PSVFile.createSignature;
+    end;
+  end else begin
+    StatusBar1.SimpleText := 'Import cancelled';
+  end;
+end;
+
+procedure TForm1.loadFile;
+begin
+  OpenDialog1.Filter := 'PSV File|*.psv|All Files|*';
+  OpenDialog1.FileName := '';
+  if OpenDialog1.Execute then begin
+    clearDisplay;
+    //PSVFile.Clear;
     if not PSVFile.loadFile(openDialog1.FileName) then begin
       showmessage('Error loading file');
       StatusBar1.SimpleText := 'Error loading file!';
       PSVFile.Clear;
     end else begin
       StatusBar1.SimpleText := ExtractFileName(openDialog1.FileName) + ' Loaded';
+      //PSVFile.createSignature;
     end;
   end else begin
     StatusBar1.SimpleText := 'Load cancelled';
@@ -270,6 +344,26 @@ begin
 end;
 
 
+
+procedure TForm1.SaveasPSV1Click(Sender: TObject);
+var
+  location : string;
+begin
+  //showmessage('saving file..');
+  location := '';
+    location := BrowseforFolder('Choose location to save to..', initialSaveDir, True);
+    if location <> '' then begin
+      //showmessage('saving file..');
+      if PSVFile.savePSVFile(location) then begin
+        statusbar1.SimpleText := 'Save complete';
+      end else begin
+      statusbar1.SimpleText := 'Save cancelled';
+      end;
+    end else begin
+      statusbar1.SimpleText := 'Save is cancelled';
+    end;
+
+end;
 
 procedure TForm1.SaveDialog2TypeChange(Sender: TObject);
 begin
@@ -311,9 +405,92 @@ begin
 end;
 
 
+procedure TForm1.btSaveAsPSVClick(Sender: TObject);
+var
+  location : string;
+begin
+  //showmessage('saving file..');
+  location := '';
+    location := BrowseforFolder('Choose location to save to..', initialSaveDir, True);
+    if location <> '' then begin
+      //showmessage('saving file..');
+      if PSVFile.savePSVFile(location) then begin
+        statusbar1.SimpleText := 'Save complete';
+      end else begin
+      statusbar1.SimpleText := 'Save cancelled';
+      end;
+    end else begin
+      statusbar1.SimpleText := 'Save is cancelled';
+    end;
+
+end;
+
+procedure TForm1.btnExportAsMaxClick(Sender: TObject);
+begin
+ exportMaxFile;
+end;
+
 procedure TForm1.btnExtractAllClick(Sender: TObject);
 begin
   ExtractAll;
+end;
+
+procedure TForm1.btnImportARMaxClick(Sender: TObject);
+begin
+  OpenDialog1.Filter := 'AR Max Save File|*.max|All Files|*';
+  OpenDialog1.FileName := '';
+  if OpenDialog1.Execute then begin
+    clearDisplay;
+    //PSVFile.Clear;
+    if not PSVFile.ImportMaxFile(openDialog1.FileName) then begin
+      showmessage('Error importing file');
+      StatusBar1.SimpleText := 'Error importing file!';
+      PSVFile.Clear;
+    end else begin
+      StatusBar1.SimpleText := ExtractFileName(openDialog1.FileName) + ' Imported';
+      //PSVFile.createSignature;
+    end;
+  end else begin
+    StatusBar1.SimpleText := 'Import cancelled';
+  end;
+end;
+
+procedure TForm1.btnImportPS1SaveClick(Sender: TObject);
+begin
+  OpenDialog1.Filter := 'PS1 Single Save File|*.mcs|All Files|*';
+  OpenDialog1.FileName := '';
+  if OpenDialog1.Execute then begin
+    clearDisplay;
+    //PSVFile.Clear;
+    if not PSVFile.ImportPS1MCSFile(openDialog1.FileName) then begin
+      showmessage('Error importing file');
+      StatusBar1.SimpleText := 'Error importing file!';
+      PSVFile.Clear;
+    end else begin
+      StatusBar1.SimpleText := ExtractFileName(openDialog1.FileName) + ' Imported';
+      //PSVFile.createSignature;
+    end;
+  end else begin
+    StatusBar1.SimpleText := 'Import cancelled';
+  end;
+end;
+
+procedure Tform1.exportMaxFile;
+begin
+  saveDialog2.FileName := PSVfile.getDirName + '.max';
+  saveDialog2.DefaultExt := 'max';
+  saveDialog2.Filter := 'AR Max Save|*.max|All Files|*';
+  //saveDialog2.FilterIndex := 1;
+  if SaveDialog2.Execute then begin
+     if PSVFile.exportARMaxSave(saveDialog2.FileName) then begin
+      StatusBar1.SimpleText := 'File saved';
+     end else begin
+      StatusBar1.SimpleText := 'Export cancelled';
+     end;
+  end else begin
+     StatusBar1.SimpleText := 'Export cancelled';
+  end;
+
 end;
 
 end.

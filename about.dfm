@@ -1278,15 +1278,15 @@ object AboutBox: TAboutBox
       Top = 48
       Width = 53
       Height = 13
-      Caption = 'Version 1.2'
+      Caption = 'Version 1.3'
       IsControl = True
     end
     object Copyright: TLabel
       Left = 128
       Top = 74
-      Width = 141
+      Width = 145
       Height = 13
-      Caption = 'Copyright gothi (c) 2006/2011'
+      Caption = 'Copyright gothi (c) 2006 - 2019'
       IsControl = True
     end
     object lblWeb: TLabel

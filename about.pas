@@ -61,7 +61,7 @@ end;
 procedure TAboutBox.lblWebClick(Sender: TObject);
 begin
   //launch web browser
-  ShellExecute(Handle, 'open', PChar('http://www.ps2savetools.com'), 0, 0, SW_SHOWNORMAL);
+  ShellExecute(Handle, 'open', PChar('https://www.ps2savetools.com'), 0, 0, SW_SHOWNORMAL);
 end;
 
 procedure TAboutBox.lblWebMouseEnter(Sender: TObject);
